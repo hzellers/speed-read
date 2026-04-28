@@ -1,0 +1,14 @@
+{
+  "name": "Speed Read",
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:20",
+  "postCreateCommand": "npm install",
+  "postStartCommand": "bash -lc 'nohup npm run dev -- --host 0.0.0.0 > /tmp/vite.log 2>&1 &'",
+  "forwardPorts": [5173],
+  "portsAttributes": {
+    "5173": {
+      "label": "Vite Dev",
+      "visibility": "public",
+      "onAutoForward": "openPreview"
+    }
+  }
+}
