@@ -70,16 +70,20 @@ body,
   white-space: pre;
   line-height: 1;
   will-change: transform;
+  font-variant-ligatures: none;
+  font-feature-settings: "liga" 0, "calt" 0;
 }
-.word .left,
-.word .right {
-  color: var(--fg);
+.word .ch {
+  display: inline-block;
+  width: 1ch;
+  text-align: center;
 }
 .word .pivot {
   color: var(--accent);
 }
-.word .left {
-  text-align: right;
+.word .left,
+.word .right {
+  color: var(--fg);
 }
 
 .idle-msg {
