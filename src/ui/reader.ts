@@ -108,12 +108,12 @@ export class Reader {
     }
     const { left, pivot, right } = splitAtPivot(t.word);
     const leftLen = left.length;
-    this.wordEl.style.transform = `translateX(calc(-${leftLen}ch - 0.5ch))`;
+    this.wordEl.style.transform = `translate(calc(-${leftLen}ch - 0.5ch), -50%)`;
     this.wordEl.innerHTML = `<span class="left">${esc(left)}</span><span class="pivot">${esc(pivot)}</span><span class="right">${esc(right)}</span>`;
   }
 
   private renderEnd(): void {
-    this.wordEl.style.transform = `translateX(-50%)`;
+    this.wordEl.style.transform = `translate(-50%, -50%)`;
     this.wordEl.innerHTML = `<span class="right" style="color:var(--dim);font-size:0.6em">end</span>`;
   }
 }

@@ -172,9 +172,13 @@ fileInput.addEventListener("change", async () => {
   errEl.textContent = "Loading…";
   try {
     const { title, text } = await extractText(file);
-    pasteEl.value = text;
     state.title = title;
-    errEl.textContent = `${title} · ${text.split(/\s+/).filter(Boolean).length} words`;
+    state.text = text;
+    state.index = 0;
+    save(state);
+    reader.load(text, 0);
+    idleEl.style.display = "none";
+    closeSheet();
   } catch (err) {
     errEl.textContent = err instanceof Error ? err.message : "Failed to read file";
   } finally {
