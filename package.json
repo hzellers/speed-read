@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "mammoth": "^1.8.0",
+    "marked": "^18.0.3",
     "pdfjs-dist": "^4.7.76"
   },
   "devDependencies": {

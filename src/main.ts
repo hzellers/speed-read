@@ -80,7 +80,7 @@ wpmVal.textContent = String(state.wpm);
 reader.setWpm(state.wpm);
 
 if (state.text) {
-  reader.load(state.text, state.index);
+  reader.load(state.text, state.index, state.format);
   idleEl.style.display = "none";
 } else {
   idleEl.style.display = "";
@@ -171,12 +171,13 @@ fileInput.addEventListener("change", async () => {
   if (!file) return;
   errEl.textContent = "Loading…";
   try {
-    const { title, text } = await extractText(file);
+    const { title, text, format } = await extractText(file);
     state.title = title;
     state.text = text;
+    state.format = format;
     state.index = 0;
     save(state);
-    reader.load(text, 0);
+    reader.load(text, 0, format);
     idleEl.style.display = "none";
     closeSheet();
   } catch (err) {
@@ -193,9 +194,10 @@ confirmBtn.addEventListener("click", () => {
     return;
   }
   state.text = text;
+  state.format = "plain";
   state.index = 0;
   save(state);
-  reader.load(text, 0);
+  reader.load(text, 0, "plain");
   idleEl.style.display = "none";
   closeSheet();
 });
