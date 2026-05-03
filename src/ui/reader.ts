@@ -1,11 +1,15 @@
-import { tokenize, type Token } from "../rsvp/tokenize";
+import { tokenize, type OverlayPayload, type Token, type WordToken } from "../rsvp/tokenize";
 import { splitAtPivot } from "../rsvp/orp";
 import { wordDurationMs } from "../rsvp/scheduler";
+import type { Format } from "../store";
 
 export type ReaderEvents = {
   onTick: (index: number, total: number) => void;
   onEnd: () => void;
+  onOverlay?: (payload: OverlayPayload) => void;
 };
+
+export type Tokenizer = (text: string) => Token[];
 
 export class Reader {
   private tokens: Token[] = [];
@@ -13,15 +17,17 @@ export class Reader {
   private timer: number | null = null;
   private playing = false;
   private wpm = 300;
+  private tokenizer: Tokenizer = tokenize;
 
   constructor(
     private wordEl: HTMLElement,
     private events: ReaderEvents,
   ) {}
 
-  load(text: string, startIndex = 0): void {
+  load(text: string, startIndex = 0, format: Format = "plain", mdTokenizer?: Tokenizer): void {
     this.pause();
-    this.tokens = tokenize(text);
+    this.tokenizer = format === "markdown" && mdTokenizer ? mdTokenizer : tokenize;
+    this.tokens = this.tokenizer(text);
     this.idx = Math.min(Math.max(0, startIndex), Math.max(0, this.tokens.length - 1));
     this.renderCurrent();
     this.events.onTick(this.idx, this.tokens.length);
@@ -44,6 +50,13 @@ export class Reader {
 
   isPlaying(): boolean {
     return this.playing;
+  }
+
+  seek(index: number): void {
+    this.pause();
+    this.idx = Math.min(Math.max(0, index), Math.max(0, this.tokens.length - 1));
+    this.renderCurrent();
+    this.events.onTick(this.idx, this.tokens.length);
   }
 
   play(): void {
@@ -84,6 +97,13 @@ export class Reader {
       this.events.onEnd();
       return;
     }
+    if (token.kind === "overlay") {
+      this.playing = false;
+      this.events.onTick(this.idx, this.tokens.length);
+      this.idx += 1;
+      this.events.onOverlay?.(token.payload);
+      return;
+    }
     this.renderCurrent();
     this.events.onTick(this.idx, this.tokens.length);
     const delay = wordDurationMs(token, this.wpm);
@@ -104,8 +124,18 @@ export class Reader {
     const t = this.tokens[this.idx];
     if (!t) {
       this.wordEl.innerHTML = "";
+      this.wordEl.className = "word";
       return;
     }
+    if (t.kind === "overlay") {
+      this.wordEl.innerHTML = "";
+      this.wordEl.className = "word";
+      return;
+    }
+    this.renderWord(t);
+  }
+
+  private renderWord(t: WordToken): void {
     const { left, pivot, right } = splitAtPivot(t.word);
     const leftLen = [...left].length;
     this.wordEl.style.transform = `translate(calc(-${leftLen}ch - 0.5ch), -50%)`;
@@ -115,10 +145,14 @@ export class Reader {
       ...[...right].map((c) => `<span class="ch">${esc(c)}</span>`),
     ].join("");
     this.wordEl.innerHTML = cells;
+    const classes = ["word"];
+    if (t.style) classes.push(`style-${t.style}`);
+    this.wordEl.className = classes.join(" ");
   }
 
   private renderEnd(): void {
     this.wordEl.style.transform = `translate(-50%, -50%)`;
+    this.wordEl.className = "word";
     this.wordEl.innerHTML = `<span class="right" style="color:var(--dim);font-size:0.6em">end</span>`;
   }
 }

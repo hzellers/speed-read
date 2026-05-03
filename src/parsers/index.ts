@@ -1,42 +1,28 @@
-export async function extractText(file: File): Promise<{ title: string; text: string }> {
+import type { Format } from "../store";
+
+export type ExtractResult = { title: string; text: string; format: Format };
+
+export async function extractText(file: File): Promise<ExtractResult> {
   const name = file.name;
   const ext = name.toLowerCase().split(".").pop() ?? "";
   const title = name.replace(/\.[^.]+$/, "");
 
   if (ext === "txt") {
-    return { title, text: await file.text() };
+    return { title, text: await file.text(), format: "plain" };
   }
   if (ext === "md" || ext === "markdown") {
-    return { title, text: stripMarkdown(await file.text()) };
+    return { title, text: await file.text(), format: "markdown" };
   }
   if (ext === "docx") {
     const { default: mammoth } = await import("mammoth/mammoth.browser.js");
     const buf = await file.arrayBuffer();
     const result = await mammoth.extractRawText({ arrayBuffer: buf });
-    return { title, text: result.value };
+    return { title, text: result.value, format: "plain" };
   }
   if (ext === "pdf") {
-    return { title, text: await extractPdf(file) };
+    return { title, text: await extractPdf(file), format: "plain" };
   }
   throw new Error(`Unsupported file type: .${ext}`);
-}
-
-function stripMarkdown(md: string): string {
-  return md
-    .replace(/```[\s\S]*?```/g, "")
-    .replace(/`([^`]+)`/g, "$1")
-    .replace(/!\[([^\]]*)\]\([^)]+\)/g, "$1")
-    .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
-    .replace(/^#{1,6}\s+/gm, "")
-    .replace(/^>\s?/gm, "")
-    .replace(/^[-*+]\s+/gm, "")
-    .replace(/^\d+\.\s+/gm, "")
-    .replace(/\*\*([^*]+)\*\*/g, "$1")
-    .replace(/\*([^*]+)\*/g, "$1")
-    .replace(/__([^_]+)__/g, "$1")
-    .replace(/_([^_]+)_/g, "$1")
-    .replace(/^---+$/gm, "")
-    .replace(/<[^>]+>/g, "");
 }
 
 async function extractPdf(file: File): Promise<string> {

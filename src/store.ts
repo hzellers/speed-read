@@ -1,10 +1,13 @@
 const KEY = "speed-read:v1";
 
+export type Format = "plain" | "markdown";
+
 export type State = {
   text: string;
   title: string;
   index: number;
   wpm: number;
+  format: Format;
 };
 
 const DEFAULT: State = {
@@ -12,6 +15,7 @@ const DEFAULT: State = {
   title: "",
   index: 0,
   wpm: 300,
+  format: "plain",
 };
 
 export function load(): State {
