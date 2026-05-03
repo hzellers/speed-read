@@ -72,6 +72,7 @@ body,
   will-change: transform;
   font-variant-ligatures: none;
   font-feature-settings: "liga" 0, "calt" 0;
+  text-transform: uppercase;
 }
 .word .ch {
   display: inline-block;
